@@ -71,6 +71,7 @@ export default function Hero() {
           >
             <Link
               href="/projects"
+              prefetch={false}
               className="inline-flex items-center gap-2.5 rounded-none bg-black px-6 py-3.5 text-xs font-mono font-bold uppercase tracking-[0.1em] text-white hover:bg-[#E11D48] transition-colors"
             >
               <span>Explore Projects</span>

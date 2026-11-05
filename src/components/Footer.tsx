@@ -30,22 +30,22 @@ export default function Footer() {
             <h4 className="font-bold text-white">Community</h4>
             <ul className="space-y-2 text-zinc-400 font-normal">
               <li>
-                <Link href="/projects" className="hover:text-white transition-colors">
+                <Link href="/projects" prefetch={false} className="hover:text-white transition-colors">
                   Explore Projects
                 </Link>
               </li>
               <li>
-                <Link href="/events" className="hover:text-white transition-colors">
+                <Link href="/events" prefetch={false} className="hover:text-white transition-colors">
                   Events & Hackathons
                 </Link>
               </li>
               <li>
-                <Link href="/newsroom" className="hover:text-white transition-colors">
+                <Link href="/newsroom" prefetch={false} className="hover:text-white transition-colors">
                   Newsroom
                 </Link>
               </li>
               <li>
-                <Link href="/organisations" className="hover:text-white transition-colors">
+                <Link href="/organisations" prefetch={false} className="hover:text-white transition-colors">
                   Clubs (OSC, GDSC, IEEE, ARC)
                 </Link>
               </li>
@@ -57,17 +57,17 @@ export default function Footer() {
             <h4 className="font-bold text-white">Standards</h4>
             <ul className="space-y-2 text-zinc-400 font-normal">
               <li>
-                <Link href="/knowledge-base/rulebook" className="hover:text-white transition-colors">
+                <Link href="/knowledge-base/rulebook" prefetch={false} className="hover:text-white transition-colors">
                   Rulebook of Open Source
                 </Link>
               </li>
               <li>
-                <Link href="/knowledge-base" className="hover:text-white transition-colors">
-                  Learning Guides
+                <Link href="/knowledge-base" prefetch={false} className="hover:text-white transition-colors">
+                  Learn
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-white transition-colors">
+                <Link href="/about" prefetch={false} className="hover:text-white transition-colors">
                   Faculty & Core Team
                 </Link>
               </li>

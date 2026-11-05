@@ -11,19 +11,20 @@ export default function BrandLogo({ className = "", size = "md" }: BrandLogoProp
   return (
     <Link
       href="/"
+      prefetch={false}
       className={`group inline-flex items-center gap-2 select-none ${className}`}
       aria-label="ARISE Open Source Community"
     >
       <div className="flex items-center tracking-[-0.03em]">
         <span
-          className={`font-black text-black group-hover:text-[#E11D48] transition-colors ${
+          className={`          font-black text-[var(--text-primary)] group-hover:text-[#FF2A6D] transition-colors ${
             isLarge ? "text-2xl" : "text-xl"
           }`}
         >
           ARISE
         </span>
-        <span className="mx-1.5 text-black/20 font-light">/</span>
-        <span className="font-mono text-xs uppercase tracking-[0.1em] text-[#737373] bg-black/[0.04] px-1.5 py-0.5 border border-black/10">
+        <span className="mx-1.5 font-light text-[var(--text-muted)]">/</span>
+        <span className="border border-[var(--border-subtle)] bg-[var(--surface)] px-1.5 py-0.5 font-mono text-xs uppercase tracking-[0.1em] text-[var(--text-secondary)]">
           OSC
         </span>
       </div>

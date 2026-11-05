@@ -1,79 +1,30 @@
-import { Newspaper, Calendar, Tag, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { prisma } from "@/lib/db";
+import { unstable_cache } from "next/cache";
+import Markdown from "react-markdown";
+import { hasDatabaseConfig } from "@/lib/config";
 
-export default function NewsroomPage() {
-  const posts = [
-    {
-      id: "post-1",
-      title: "ARISE OSC Platform Launch: Unified Open Source Hub at SMVITM",
-      date: "Oct 28, 2026",
-      category: "Announcements",
-      summary:
-        "The official launch of the ARISE collaboration engine bringing together OSC, GDSC, IEEE CS, and ARC into a shared contribution pipeline.",
-      readTime: "3 min read",
-    },
-    {
-      id: "post-2",
-      title: "SMVITM Students Merge 100+ Upstream Commits During Semester Sprint",
-      date: "Oct 15, 2026",
-      category: "Recap",
-      summary:
-        "A recap of student contributions across VTU syllabus tooling, campus LoRa mesh nodes, and open-access courseware repositories.",
-      readTime: "4 min read",
-    },
-  ];
+export const dynamic = "force-dynamic";
 
-  return (
-    <div className="py-12 bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="border-b border-slate-200 pb-8">
-          <div className="text-xs font-mono font-semibold uppercase tracking-wider text-rose-600 mb-2">
-            Dispatches & Recaps
+export default async function NewsroomPage() {
+  if (!hasDatabaseConfig()) {
+    return (
+      <main className="site-page">
+        <div className="site-container">
+          <p className="eyebrow">Dispatches from ARISE</p>
+          <h1 className="page-title">Newsroom</h1>
+          <div className="status-card">
+            <h2>Newsroom is waiting for its database connection.</h2>
+            <p>Set <code>DATABASE_URL</code> in the deployment environment, then restart the server to load published dispatches.</p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-950">
-            Newsroom
-          </h1>
-          <p className="mt-2 text-base text-slate-600 max-w-2xl">
-            Updates, technical writeups, milestone recaps, and club announcements from the SMVITM developer community.
-          </p>
         </div>
-
-        {/* Posts List */}
-        <div className="mt-10 max-w-4xl space-y-8">
-          {posts.map((post) => (
-            <article
-              key={post.id}
-              className="rounded-xl border border-slate-200 bg-slate-50/40 p-6 sm:p-8 hover:border-slate-300 transition-colors"
-            >
-              <div className="flex items-center gap-3 text-xs font-mono text-slate-500 mb-3">
-                <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-semibold border border-rose-200">
-                  {post.category}
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  {post.date}
-                </span>
-                <span>•</span>
-                <span>{post.readTime}</span>
-              </div>
-
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-950 hover:text-rose-600 transition-colors cursor-pointer">
-                {post.title}
-              </h2>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed">{post.summary}</p>
-
-              <div className="mt-6 pt-4 border-t border-slate-200/80 flex items-center justify-between text-xs font-mono">
-                <span className="text-slate-400">SMVITM Bantakal Press</span>
-                <span className="text-slate-900 font-medium hover:text-rose-600 cursor-pointer flex items-center gap-1">
-                  <span>Read Article</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+      </main>
+    );
+  }
+  const items = await unstable_cache(
+    () => prisma.newsItem.findMany({ orderBy: { createdAt: "desc" }, include: { author: { select: { name: true } } } }),
+    ["newsroom-items"],
+    { revalidate: 300 },
+  )();
+  return <main className="site-page"><div className="site-container"><p className="eyebrow">Dispatches from ARISE</p><h1 className="page-title">Newsroom</h1><div className="resource-grid mt-12">{items.map((item) => <article key={item.id} className="resource-card"><p className="resource-kind">{item.createdAt.toLocaleDateString()} / {item.author.name}</p><h2>{item.title}</h2><div className="prose prose-sm mt-3 max-w-none text-[var(--text-secondary)]"><Markdown>{item.content}</Markdown></div></article>)}</div>{items.length === 0 && <p className="mt-12 text-[var(--text-secondary)]">No dispatches yet.</p>}<Link className="inline-flex mt-12 font-mono text-xs uppercase text-[#FF2A6D]" href="/leaderboard">View contributor leaderboard →</Link></div></main>;
 }
