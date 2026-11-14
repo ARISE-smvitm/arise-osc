@@ -1,0 +1,10 @@
+rules_version = '2';
+
+// ARISE uses Firebase Auth in the browser and Firestore exclusively from the
+// backend (firebase-admin, bypasses these rules). The client SDK is never
+// given direct database access. Deploy with: firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /{document=**} {
+    allow read, write: if false;
+  }
+}

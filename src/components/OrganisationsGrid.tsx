@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { ORGANISATIONS } from "@/data/mockData";
-import { ArrowRight, Code2, Cpu, FolderGit2, Globe, Layers, Terminal, Users } from "lucide-react";
+import { ArrowRight, Cpu, FolderGit2, Globe, Layers, Terminal } from "lucide-react";
 
 export default function OrganisationsGrid() {
   const chapters = [

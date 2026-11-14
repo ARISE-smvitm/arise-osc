@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FEATURED_PROJECTS } from "@/data/mockData";
-import { ArrowRight, ExternalLink, GitPullRequest, CircleDot, Users } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 
 export default function FeaturedProjects() {
   const [activeTab, setActiveTab] = useState<string>("All");

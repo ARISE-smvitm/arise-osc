@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import DOMPurify from "isomorphic-dompurify";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { fetchGithubReadme } from "@/lib/github-resources";
 
@@ -17,7 +18,9 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
   let error = "";
 
   try {
-    readme = await fetchGithubReadme(repository);
+    // README is arbitrary third-party content: strip scripts, event handlers and
+    // javascript: URLs before rendering its raw HTML through react-markdown.
+    readme = DOMPurify.sanitize(await fetchGithubReadme(repository), { USE_PROFILES: { html: true } });
   } catch (reason) {
     console.error("Learn resource page load failed", reason);
     error = "This resource could not be loaded right now. Please try again shortly.";

@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import BrandLogo from "./BrandLogo";
 import GithubIcon from "./GithubIcon";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-black/10 bg-[#0A0A0A] py-16 text-white">
+    <footer className="border-t border-black/10 bg-[#0A0A0A] py-16 text-white dark:bg-[#0E0E0E]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-white/10">
           {/* Brand info */}

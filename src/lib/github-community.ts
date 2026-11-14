@@ -1,3 +1,5 @@
+import { githubHeaders } from "@/lib/github";
+
 export interface CommunityContributor {
   login: string;
   avatar_url: string;
@@ -17,8 +19,9 @@ interface GithubMember {
   html_url: string;
 }
 
+/** Uses GITHUB_TOKEN when present — unauthenticated calls share one 60/h budget across all visitors. */
 export async function fetchCommunityLeaders(organization = "ARISE-smvitm"): Promise<CommunityContributor[]> {
-  const headers = { Accept: "application/vnd.github+json", "User-Agent": "arise-osc-community" };
+  const headers = githubHeaders();
   const repositoriesResponse = await fetch(
     `https://api.github.com/orgs/${encodeURIComponent(organization)}/repos?sort=updated&per_page=12`,
     { headers, next: { revalidate: 900 } },

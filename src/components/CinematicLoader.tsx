@@ -29,8 +29,8 @@ export default function CinematicLoader() {
     <div ref={root} className="loader-panel fixed inset-0 z-[100] overflow-hidden bg-[#070a12]">
       <div className="loader-plane" />
       <div className="loader-logo" aria-label="ARISE / OSC">
-        <div className="loader-logo-slice loader-logo-top"><img src="/arise-logo.jpeg" alt="" /><span>ARISE / OSC</span></div>
-        <div className="loader-logo-slice loader-logo-bottom"><img src="/arise-logo.jpeg" alt="" /><span>ARISE / OSC</span></div>
+        <div className="loader-logo-slice loader-logo-top"><img src="/arise-logo.jpeg" alt="" />{/* eslint-disable-line @next/next/no-img-element */}<span>ARISE / OSC</span></div>
+        <div className="loader-logo-slice loader-logo-bottom"><img src="/arise-logo.jpeg" alt="" />{/* eslint-disable-line @next/next/no-img-element */}<span>ARISE / OSC</span></div>
       </div>
       <div className="loader-slash" aria-hidden="true"><span /></div>
       <div className="loader-flash" aria-hidden="true" />

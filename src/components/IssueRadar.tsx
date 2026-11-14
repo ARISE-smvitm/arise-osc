@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CircleDot, ExternalLink, HelpCircle, User, Sparkles } from "lucide-react";
+import { ArrowRight, ExternalLink, HelpCircle, User } from "lucide-react";
 
 interface OpenIssue {
   id: string;

@@ -1,16 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import BrandLogo from "./BrandLogo";
 import GithubIcon from "./GithubIcon";
-import { signIn } from "next-auth/react";
+import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
+import { signOutEverywhere } from "@/lib/firebase-signin";
 import ProfileNav from "./ProfileNav";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isFirebaseConfigured()) return;
+    return onAuthStateChanged(getFirebaseAuth(), setFirebaseUser);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me")
+      .then((response) => response.json())
+      .then((data: { user: { role?: string } | null }) => {
+        if (!cancelled) setIsAdmin(data?.user?.role === "ADMIN");
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [firebaseUser]);
+
+  async function handleSignOut() {
+    await signOutEverywhere();
+    setMobileMenuOpen(false);
+    router.refresh();
+  }
 
   const navLinks = [
     { name: "Projects", href: "/projects" },
@@ -44,14 +76,35 @@ export default function Navbar() {
         <div className="hidden items-center justify-end gap-2 sm:flex">
           <ThemeToggle />
           <ProfileNav />
-          <button
-            type="button"
-            onClick={() => signIn("github")}
-            className="hidden items-center gap-2 rounded-full bg-[#0A0A0A] px-4 py-2 font-mono text-xs uppercase tracking-[0.1em] font-bold text-white transition-colors hover:bg-[#FF2A6D] dark:bg-white dark:text-[#0A0A0A] lg:inline-flex"
-          >
-            <GithubIcon className="w-3.5 h-3.5 text-white" />
-            <span>Sign in with GitHub</span>
-          </button>
+          {firebaseUser ? (
+            <div className="hidden items-center gap-2 lg:flex">
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  prefetch={false}
+                  className="inline-flex items-center gap-2 rounded-full border border-[#FF2A6D]/50 px-4 py-2 font-mono text-xs uppercase tracking-[0.1em] font-bold text-[#FF2A6D] transition-colors hover:bg-[#FF2A6D] hover:text-white"
+                >
+                  <span>Admin</span>
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--border-subtle)] px-4 py-2 font-mono text-xs uppercase tracking-[0.1em] font-bold text-[var(--text-primary)] transition-colors hover:border-[#FF2A6D] hover:text-[#FF2A6D]"
+              >
+                <span>Sign out</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              prefetch={false}
+              className="hidden items-center gap-2 rounded-full bg-[#0A0A0A] px-4 py-2 font-mono text-xs uppercase tracking-[0.1em] font-bold text-white transition-colors hover:bg-[#FF2A6D] dark:bg-white dark:text-[#0A0A0A] lg:inline-flex"
+            >
+              <GithubIcon className="w-3.5 h-3.5 text-white" />
+              <span>Sign in with GitHub</span>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -86,14 +139,45 @@ export default function Navbar() {
             ))}
           </div>
           <div className="pt-2 border-t border-black/10">
-            <button
-              type="button"
-              onClick={() => signIn("github")}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0A0A0A] px-4 py-2.5 font-mono text-xs uppercase tracking-[0.1em] font-bold text-white transition-colors hover:bg-[#FF2A6D] dark:bg-white dark:text-[#0A0A0A]"
-            >
-              <GithubIcon className="w-4 h-4 text-white" />
-              <span>Sign in with GitHub</span>
-            </button>
+            {firebaseUser ? (
+              <div className="grid gap-2">
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    prefetch={false}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-[#FF2A6D] px-4 py-2.5 font-mono text-xs uppercase tracking-[0.1em] font-bold text-[#FF2A6D] transition-colors hover:bg-[#FF2A6D] hover:text-white"
+                  >
+                    <span>Admin console</span>
+                  </Link>
+                )}
+                <Link
+                  href="/dashboard"
+                  prefetch={false}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-black/15 px-4 py-2.5 font-mono text-xs uppercase tracking-[0.1em] font-bold text-[var(--text-primary)] transition-colors hover:border-[#FF2A6D] hover:text-[#FF2A6D] dark:border-white/15"
+                >
+                  <span>Open dashboard</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0A0A0A] px-4 py-2.5 font-mono text-xs uppercase tracking-[0.1em] font-bold text-white transition-colors hover:bg-[#FF2A6D] dark:bg-white dark:text-[#0A0A0A]"
+                >
+                  <span>Sign out</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                prefetch={false}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0A0A0A] px-4 py-2.5 font-mono text-xs uppercase tracking-[0.1em] font-bold text-white transition-colors hover:bg-[#FF2A6D] dark:bg-white dark:text-[#0A0A0A]"
+              >
+                <GithubIcon className="w-4 h-4 text-white" />
+                <span>Sign in with GitHub</span>
+              </Link>
+            )}
           </div>
         </div>
       )}

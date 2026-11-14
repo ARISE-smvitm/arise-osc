@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, GitPullRequest, ShieldCheck, Scale, Terminal, CheckCircle2 } from "lucide-react";
+import { GitPullRequest, ShieldCheck, Scale, Terminal, CheckCircle2 } from "lucide-react";
 
 export default function RulebookPage() {
   return (
@@ -102,7 +102,7 @@ export default function RulebookPage() {
             </div>
             <div className="text-sm space-y-3">
               <p>
-                To avoid duplicate work, contributors must comment on an issue or click "Request to work on this" before writing code. Maintainers will assign the issue, granting a 7-day window to open a draft PR.
+                To avoid duplicate work, contributors must comment on an issue or click &quot;Request to work on this&quot; before writing code. Maintainers will assign the issue, granting a 7-day window to open a draft PR.
               </p>
             </div>
           </section>

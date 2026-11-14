@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CheckCircle2, GraduationCap, Mail, MessageSquare, MapPin, Sparkles, Users, Code2, GitMerge } from "lucide-react";
+import { CheckCircle2, GraduationCap, Mail, MessageSquare } from "lucide-react";
 
 export default function AboutPage() {
   const contributorStages = [

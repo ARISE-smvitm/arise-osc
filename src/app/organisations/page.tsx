@@ -1,6 +1,5 @@
 import { ORGANISATIONS, FEATURED_PROJECTS } from "@/data/mockData";
-import { FolderGit2, Calendar, Users, ArrowRight, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import { FolderGit2, Calendar, ExternalLink } from "lucide-react";
 
 export default function OrganisationsPage() {
   return (
