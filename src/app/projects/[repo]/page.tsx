@@ -1,9 +1,8 @@
 import Link from "next/link";
+import type { Components } from "react-markdown";
 import { notFound } from "next/navigation";
-import ReactMarkdown, { type Components } from "react-markdown";
-import rehypeRaw from "rehype-raw";
-import DOMPurify from "isomorphic-dompurify";
 import { ArrowLeft, ArrowUpRight, Star, GitFork, CircleDot, GitBranch, Scale, MessageSquare, Sparkles, Clock, Code2, BookOpen } from "lucide-react";
+import ReadmeMarkdown from "@/components/ReadmeMarkdown";
 import { getOrgRepo, getRepoReadme, getOpenIssues, GITHUB_ORG, type RepoIssue } from "@/lib/github";
 
 export const dynamic = "force-dynamic";
@@ -91,7 +90,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     getRepoReadme(orgRepo.owner, orgRepo.name),
     getOpenIssues(orgRepo.owner, orgRepo.name, 15),
   ]);
-  const safeReadme = readme ? DOMPurify.sanitize(readme, { USE_PROFILES: { html: true } }) : null;
 
   return (
     <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
@@ -154,10 +152,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <span className="font-mono text-[0.62rem] text-[var(--text-muted)]">branch · {orgRepo.defaultBranch}</span>
               </header>
               <div className="resource-reader-body max-h-none">
-                {safeReadme ? (
-                  <ReactMarkdown rehypePlugins={[rehypeRaw]} components={markdownComponents(orgRepo.owner, orgRepo.name, orgRepo.defaultBranch)}>
-                    {safeReadme}
-                  </ReactMarkdown>
+                {readme ? (
+                  <ReadmeMarkdown content={readme} components={markdownComponents(orgRepo.owner, orgRepo.name, orgRepo.defaultBranch)} />
                 ) : (
                   <div className="p-4 text-sm text-[var(--text-secondary)]">
                     <p>This repository has no README yet.</p>
