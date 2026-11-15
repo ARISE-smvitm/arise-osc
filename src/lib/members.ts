@@ -13,6 +13,8 @@ export interface Member {
   role: MemberRole;
   githubHandle: string | null;
   githubId: number | null;
+  /** Verified emails reported by the GitHub provider — union-matched against ADMIN_EMAILS. */
+  githubEmails: string[];
   contributionScore: number;
   bio: string;
   college: string;
@@ -34,6 +36,7 @@ interface MemberDoc {
   role?: string;
   githubHandle?: string | null;
   githubId?: number | null;
+  githubEmails?: string[];
   contributionScore?: number;
   bio?: string;
   college?: string;
@@ -63,6 +66,7 @@ function memberFromDoc(id: string, data: MemberDoc | undefined): Member | null {
     role,
     githubHandle: data.githubHandle ?? null,
     githubId: typeof data.githubId === "number" ? data.githubId : null,
+    githubEmails: Array.isArray(data.githubEmails) ? data.githubEmails : [],
     contributionScore: typeof data.contributionScore === "number" ? data.contributionScore : 0,
     bio: data.bio ?? "",
     college: data.college ?? "",
@@ -136,31 +140,67 @@ export interface ProvisionInput {
   image: string | null;
   githubHandle?: string | null;
   githubId?: number | null;
+  githubEmails?: string[];
+}
+
+function normalizeEmails(emails: Array<string | undefined | null>): string[] {
+  return emails
+    .filter((email): email is string => typeof email === "string")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** Lowercased verified GitHub emails + the token email — the set ADMIN_EMAILS is matched against. */
+function adminCandidates(input: ProvisionInput): string[] {
+  return [...new Set(normalizeEmails([input.email, ...(input.githubEmails ?? [])]))];
+}
+
+/** True when any candidate is in ADMIN_EMAILS. */
+function wantsAdmin(input: ProvisionInput): boolean {
+  const admins = adminEmails();
+  if (admins.length === 0) return false;
+  return adminCandidates(input).some((email) => admins.includes(email));
 }
 
 /**
  * Find-or-create the member for a verified Firebase profile.
  * memberId allocation uses a counter document inside a transaction, so
  * concurrent first sign-ins can never claim the same ARISE-XXXX.
+ * ADMIN_EMAILS is union-matched against the token email and every verified
+ * GitHub email on every sign-in — list membership promotes (never demotes).
  */
 export async function provisionMember(input: ProvisionInput): Promise<Member> {
   const db = getDb();
   if (!db) throw new Error("Firestore is not configured — check FIREBASE_SERVICE_ACCOUNT_KEY");
 
   const email = input.email.trim().toLowerCase();
+  const githubEmails = normalizeEmails(input.githubEmails ?? []);
+  const promote = wantsAdmin({ ...input, email, githubEmails });
   const userRef = users(db).doc(input.uid);
 
   const existing = await userRef.get();
   if (existing.exists) {
+    const data = existing.data() as MemberDoc;
     const handle = input.githubHandle?.toLowerCase() ?? null;
     const githubId = typeof input.githubId === "number" ? input.githubId : null;
-    if (handle || githubId) {
-      await userRef.set(
-        { ...(handle ? { githubHandle: handle } : {}), ...(githubId ? { githubId } : {}), updatedAt: FieldValue.serverTimestamp() },
-        { merge: true },
-      );
-    }
-    const member = memberFromDoc(existing.id, { ...(existing.data() as MemberDoc), ...(handle ? { githubHandle: handle } : {}), ...(githubId ? { githubId } : {}) });
+    await userRef.set(
+      {
+        ...(githubEmails.length ? { githubEmails } : {}),
+        ...(handle ? { githubHandle: handle } : {}),
+        ...(githubId ? { githubId } : {}),
+        ...(promote && data.role !== "ADMIN" ? { role: "ADMIN" } : {}),
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+    const merged = {
+      ...data,
+      githubEmails: githubEmails.length ? githubEmails : data.githubEmails,
+      githubHandle: handle ?? data.githubHandle ?? null,
+      githubId: githubId ?? data.githubId ?? null,
+      role: promote ? "ADMIN" : data.role,
+    };
+    const member = memberFromDoc(existing.id, merged);
     if (!member) throw new Error("Stored member document is malformed");
     return member;
   }
@@ -169,12 +209,19 @@ export async function provisionMember(input: ProvisionInput): Promise<Member> {
   const byEmail = await users(db).where("email", "==", email).limit(1).get();
   if (!byEmail.empty) {
     const snap = byEmail.docs[0];
-    await users(db).doc(input.uid).set(snap.data());
-    return memberFromDoc(input.uid, snap.data() as MemberDoc)!;
+    const current = snap.data() as MemberDoc;
+    const linked = {
+      ...current,
+      githubEmails: githubEmails.length ? githubEmails : current.githubEmails,
+      githubHandle: input.githubHandle?.toLowerCase() ?? current.githubHandle ?? null,
+      githubId: typeof input.githubId === "number" ? input.githubId : current.githubId ?? null,
+      role: promote ? "ADMIN" : current.role,
+    };
+    await users(db).doc(input.uid).set({ ...linked, updatedAt: FieldValue.serverTimestamp() });
+    return memberFromDoc(input.uid, linked)!;
   }
 
   const counterRef = db.collection("meta").doc("memberCounter");
-  const admins = adminEmails();
 
   const created = await db.runTransaction(async (tx) => {
     const counterSnap = await tx.get(counterRef);
@@ -186,9 +233,10 @@ export async function provisionMember(input: ProvisionInput): Promise<Member> {
       email,
       name: input.name.trim() || "ARISE member",
       image: input.image,
-      role: admins.includes(email) ? "ADMIN" : "MEMBER",
+      role: promote ? "ADMIN" : "MEMBER",
       githubHandle: input.githubHandle?.toLowerCase() ?? null,
       githubId: typeof input.githubId === "number" ? input.githubId : null,
+      githubEmails,
       contributionScore: 0,
       bio: "",
       college: "",

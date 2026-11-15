@@ -50,10 +50,7 @@ export default async function Home() {
       {orgPulse.repos > 0 && (
         <section aria-label="ARISE GitHub organisation at a glance" className="border-t border-[var(--border-subtle)] bg-[#0A0A0A] text-white dark:bg-[#101010]">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-12 gap-y-6 px-6 py-7 sm:px-6">
-            <div className="max-w-xs">
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-[#FF2A6D]">{GITHUB_ORG} · live</p>
-              <p className="mt-1.5 text-sm leading-6 text-white/55">Not a marketing stat — pulled straight from the GitHub organisation right now.</p>
-            </div>
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-[#FF2A6D]">{GITHUB_ORG}</p>
             <dl className="flex flex-wrap items-center gap-x-10 gap-y-4">
               <PulseStat value={orgPulse.repos} label="public repos" />
               <PulseStat value={orgPulse.stars} label="total stars" />

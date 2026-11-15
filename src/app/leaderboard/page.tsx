@@ -78,7 +78,7 @@ export default async function LeaderboardPage() {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#FF2A6D]">Contribution index</p>
         <h1 className="mt-3 text-6xl font-bold tracking-tight">Leaderboard</h1>
         <p className="mt-3 max-w-lg text-sm text-[var(--text-secondary)]">
-          Real GitHub contributions across <span className="text-[var(--text-primary)]">{GITHUB_ORG}</span> — refreshed hourly, merged with member records. Members are marked <span className="text-[#FF2A6D]">ARISE</span>; everyone else contributes anonymously as a GitHub handle.
+          Contributions pulled from the org&apos;s repos, refreshed hourly. Members are tagged with their member ID.
         </p>
 
         {totals && (

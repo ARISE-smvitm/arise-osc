@@ -61,13 +61,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/knowledge-base" prefetch={false} className="hover:text-white transition-colors">
+                <Link href="/learn" prefetch={false} className="hover:text-white transition-colors">
                   Learn
                 </Link>
               </li>
               <li>
                 <Link href="/about" prefetch={false} className="hover:text-white transition-colors">
-                  Faculty & Core Team
+                  About
                 </Link>
               </li>
             </ul>
@@ -100,17 +100,7 @@ export default function Footer() {
                   <ExternalLink className="w-3 h-3 text-zinc-500" />
                 </a>
               </li>
-              <li>
-                <a
-                  href="https://discord.gg"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 hover:text-white transition-colors"
-                >
-                  <span>Discord</span>
-                  <ExternalLink className="w-3 h-3 text-zinc-500" />
-                </a>
-              </li>
+
             </ul>
           </div>
         </div>

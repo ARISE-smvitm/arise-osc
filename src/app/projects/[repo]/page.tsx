@@ -179,7 +179,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               ) : (
                 <div className="px-5 py-10 text-center text-sm text-[var(--text-muted)]">
                   <p className="font-semibold text-[var(--text-primary)]">No open issues.</p>
-                  <p className="mt-1">Perfect timing to be the first to file one — or claim the next release here.</p>
+                  <p className="mt-1">Be the first to file one — it helps whoever picks this up next.</p>
                   <a href={`${orgRepo.htmlUrl}/issues/new`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-[#FF2A6D] hover:underline">Open an issue on GitHub <ArrowUpRight size={14} /></a>
                 </div>
               )}

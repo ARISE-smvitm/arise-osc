@@ -14,24 +14,33 @@ const COOKIE_OPTIONS = {
 } as const;
 
 /**
- * Best-effort lookup of the GitHub profile for the OAuth access token issued
- * alongside the Firebase credential. The token is used for exactly one GitHub
- * API call and is never stored. Failure here never blocks sign-in.
+ * Best-effort GitHub profile + full verified email list for the OAuth access
+ * token issued alongside the Firebase credential. The token is used for these
+ * two GitHub API calls and is never stored. Failure never blocks sign-in.
  */
-async function fetchGithubIdentity(accessToken: string): Promise<{ login: string; id: number } | null> {
+async function fetchGithubProfile(accessToken: string): Promise<{ login: string; id: number; emails: string[] } | null> {
+  const headers = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "arise-osc",
+    Authorization: `Bearer ${accessToken}`,
+  };
   try {
-    const response = await fetch("https://api.github.com/user", {
-      headers: {
-        Accept: "application/vnd.github+json",
-        "User-Agent": "arise-osc",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      cache: "no-store",
-    });
-    if (!response.ok) return null;
-    const data = (await response.json()) as { login?: unknown; id?: unknown };
-    if (typeof data.login === "string" && typeof data.id === "number") return { login: data.login.toLowerCase(), id: data.id };
-    return null;
+    const [userResponse, emailsResponse] = await Promise.all([
+      fetch("https://api.github.com/user", { headers, cache: "no-store" }),
+      fetch("https://api.github.com/user/emails", { headers, cache: "no-store" }),
+    ]);
+    if (!userResponse.ok) return null;
+    const user = (await userResponse.json()) as { login?: unknown; id?: unknown };
+    if (typeof user.login !== "string" || typeof user.id !== "number") return null;
+    let emails: string[] = [];
+    if (emailsResponse.ok) {
+      const list = (await emailsResponse.json()) as unknown;
+      emails = (Array.isArray(list) ? list : [])
+        .filter((entry): entry is { email?: string; verified?: boolean } => typeof entry === "object" && entry !== null)
+        .filter((entry) => entry.verified === true && typeof entry.email === "string")
+        .map((entry) => (entry.email as string).trim().toLowerCase());
+    }
+    return { login: user.login.toLowerCase(), id: user.id, emails };
   } catch (error) {
     console.warn("GitHub identity lookup failed; continuing without it", error);
     return null;
@@ -70,8 +79,8 @@ export async function POST(request: Request) {
   const name = decoded.name?.trim() || "ARISE member";
   const image = typeof decoded.picture === "string" ? decoded.picture : null;
 
-  // Capture githubHandle/githubId so the leaderboard cron can match contributions.
-  const github = githubAccessToken ? await fetchGithubIdentity(githubAccessToken) : null;
+  // Capture handle + ALL verified emails so ADMIN_EMAILS can match any of them.
+  const github = githubAccessToken ? await fetchGithubProfile(githubAccessToken) : null;
 
   try {
     await provisionMember({
@@ -81,6 +90,7 @@ export async function POST(request: Request) {
       image,
       githubHandle: github?.login ?? null,
       githubId: github?.id ?? null,
+      githubEmails: github?.emails ?? [],
     });
   } catch (error) {
     console.error("Member provisioning failed", error);
