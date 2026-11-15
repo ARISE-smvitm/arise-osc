@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  serverExternalPackages: ["firebase-admin"],
+  transpilePackages: ["firebase-admin"],
   turbopack: {
     rules: {
       "*.css": {
